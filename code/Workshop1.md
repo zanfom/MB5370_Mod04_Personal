@@ -100,7 +100,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-103](figure/unnamed-chunk-103-1.png)
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
 
 The plot shows a negative relationship between engine size (displ) and fuel efficiency (hwy). In other words, cars with big engines use more fuel. What does this say about fuel efficiency and engine size?
 
@@ -113,14 +113,14 @@ What happens if we just try to run ggplot on its own?
 ggplot() 
 ```
 
-![plot of chunk unnamed-chunk-104](figure/unnamed-chunk-104-1.png)
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
 
 ``` r
 # Or with just the data specified?
 ggplot(data = mpg)
 ```
 
-![plot of chunk unnamed-chunk-104](figure/unnamed-chunk-104-2.png)
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-2.png)
 We need to map some aesthetics!!
 
 # When you’re creating a plot, you essentially need TWO attributes of a plot: a geom and aesthetics
@@ -151,7 +151,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-105](figure/unnamed-chunk-105-1.png)
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
 
 # Change POINT COLOR by class
 
@@ -181,7 +181,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-106](figure/unnamed-chunk-106-1.png)
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
 
 # Change POINT SIZE by class
 
@@ -215,7 +215,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-107](figure/unnamed-chunk-107-1.png)
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
 Note the warning!!!
 
 # Change TRANSPARENCY (alpha) by class
@@ -250,7 +250,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-108](figure/unnamed-chunk-108-1.png)
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
 Another warning!!
 Question: When would using alpha (or size be appropriate??)
 
@@ -291,7 +291,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-109](figure/unnamed-chunk-109-1.png)
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
 
 # Make all points blue
 
@@ -317,7 +317,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-110](figure/unnamed-chunk-110-1.png)
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
 
 # Faceting
 
@@ -348,7 +348,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-111](figure/unnamed-chunk-111-1.png)
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png)
 
 ## facet_grid
 A separate facet for each combination of drive-type (e.g. 4WD) * number of cylinders
@@ -387,7 +387,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-112](figure/unnamed-chunk-112-1.png)
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
 Note that there are no occurrences of 5 cylinder 4WDs OR RWD vehicles!
 
 ## facet_grid by just row (or column)
@@ -430,7 +430,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-113](figure/unnamed-chunk-113-1.png)
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13-1.png)
 
 ``` r
   #facet_grid(. ~ cyl) # Alternatively
@@ -460,7 +460,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-114](figure/unnamed-chunk-114-1.png)
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png)
 # 1. Exercise
 
 Read ?facet_wrap. What does nrow do? What does ncol do? What other options control the layout of the individual panels? 
@@ -503,7 +503,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-115](figure/unnamed-chunk-115-1.png)
+![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png)
 
 However, ggplot2 can use a variety of geom objects to represent the data. Here, we might want to use bar plots, line charts, boxplots and so on. Well we can handle this issue in ggplot directly using a different geom to plot the same data. Here, instead of plotting points, we will use a smooth line. 
 
@@ -535,7 +535,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-116](figure/unnamed-chunk-116-1.png)
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
 Question: when don't we use geom_line() here? What would that look like?
 
 RECAP: A geom is an object that your plot uses to represent the data. To change the geom type in your plot, simply change the geom function that you add to your plot template. Sometimes you may want to try a few things out, in which case you could use comments to help you remember what worked and what didn’t. 
@@ -567,7 +567,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-117](figure/unnamed-chunk-117-1.png)
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png)
 Question: how does R work out where to plot the line??? Can use the chunk output to inform us. Can also use the help menu.
 
 # Changing linetype ( use a variable to control it)
@@ -602,7 +602,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-118](figure/unnamed-chunk-118-1.png)
+![plot of chunk unnamed-chunk-18](figure/unnamed-chunk-18-1.png)
 
 # Grouping objects by a categorical variable to draw multiple objects
 
@@ -632,7 +632,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-119](figure/unnamed-chunk-119-1.png)
+![plot of chunk unnamed-chunk-19](figure/unnamed-chunk-19-1.png)
  
 # Change line colour based on drv value
 
@@ -665,7 +665,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-120](figure/unnamed-chunk-120-1.png)
+![plot of chunk unnamed-chunk-20](figure/unnamed-chunk-20-1.png)
 
 # Multiple geoms
 
@@ -696,7 +696,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-121](figure/unnamed-chunk-121-1.png)
+![plot of chunk unnamed-chunk-21](figure/unnamed-chunk-21-1.png)
 
 # A better way...
 
@@ -727,7 +727,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-122](figure/unnamed-chunk-122-1.png)
+![plot of chunk unnamed-chunk-22](figure/unnamed-chunk-22-1.png)
 
 # Can still manipulate each geom/layer separately
 
@@ -762,7 +762,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-123](figure/unnamed-chunk-123-1.png)
+![plot of chunk unnamed-chunk-23](figure/unnamed-chunk-23-1.png)
 
 Now we have different colours to indicate the raw data (geom_point) and one colour for the overall relationship (geom_smooth). Neat!
 
@@ -801,7 +801,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-124](figure/unnamed-chunk-124-1.png)
+![plot of chunk unnamed-chunk-24](figure/unnamed-chunk-24-1.png)
 
 Question: what does the "se = FALSE" do? 
 It tells geom_smooth() not to draw the 95% confidence band around the smooth line.
@@ -838,7 +838,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-125](figure/unnamed-chunk-125-1.png)
+![plot of chunk unnamed-chunk-25](figure/unnamed-chunk-25-1.png)
 
 
 ``` r
@@ -864,7 +864,7 @@ ggplot(data = mpg, mapping = aes(x = class, y = hwy, fill = class)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-126](figure/unnamed-chunk-126-1.png)
+![plot of chunk unnamed-chunk-26](figure/unnamed-chunk-26-1.png)
 
 
 ``` r
@@ -892,7 +892,7 @@ ggplot(data = mpg, mapping = aes(x = displ)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-127](figure/unnamed-chunk-127-1.png)
+![plot of chunk unnamed-chunk-27](figure/unnamed-chunk-27-1.png)
 
 
 ``` r
@@ -921,7 +921,7 @@ ggplot(data = mpg, mapping = aes(x = displ)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-128](figure/unnamed-chunk-128-1.png)
+![plot of chunk unnamed-chunk-28](figure/unnamed-chunk-28-1.png)
 
 
 ``` r
@@ -949,7 +949,7 @@ ggplot(data = mpg, mapping = aes(x = displ, fill = class)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-129](figure/unnamed-chunk-129-1.png)
+![plot of chunk unnamed-chunk-29](figure/unnamed-chunk-29-1.png)
 
 
 # Will these two graphs look different? Why/why not?
@@ -981,7 +981,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-130](figure/unnamed-chunk-130-1.png)
+![plot of chunk unnamed-chunk-30](figure/unnamed-chunk-30-1.png)
 
 
 ``` r
@@ -1010,7 +1010,7 @@ ggplot() +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-131](figure/unnamed-chunk-131-1.png)
+![plot of chunk unnamed-chunk-31](figure/unnamed-chunk-31-1.png)
 The two code blocks produce identical looking figures, but the difference lays in the fact that in the first plot there is aes(x= displ, y= hwy) set in mapping globally then adding geom_point() and geom_smooth(), while in the second the same data/mappings are given per each layer specifically.
 
 # 2. Transformations and stats
@@ -1062,7 +1062,7 @@ ggplot(data = diamonds) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-133](figure/unnamed-chunk-133-1.png)
+![plot of chunk unnamed-chunk-33](figure/unnamed-chunk-33-1.png)
 
 On the x-axis we have the "cut" variable from the "diamonds" data set, whileon the y-axis the bin counts for each type of cut.
 
@@ -1116,7 +1116,7 @@ ggplot(data = demo) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-135](figure/unnamed-chunk-135-1.png)
+![plot of chunk unnamed-chunk-35](figure/unnamed-chunk-35-1.png)
 
 Question: Why did we specify now specify a y axis? 
 We stored counts in "freq" data set, so compared to the previous bar plot where we were plotting raw data, now were have to specify y = freq in order to use the numbers instead of counting rows.
@@ -1145,7 +1145,7 @@ ggplot(data = diamonds) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-136](figure/unnamed-chunk-136-1.png)
+![plot of chunk unnamed-chunk-36](figure/unnamed-chunk-36-1.png)
 
 In this bar plot we are displaying the proportion of the total diamond data set rather that a count.
 
@@ -1178,7 +1178,7 @@ ggplot(data = diamonds) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-137](figure/unnamed-chunk-137-1.png)
+![plot of chunk unnamed-chunk-37](figure/unnamed-chunk-37-1.png)
 
 # Aesthetic adjustments adjustments
 
@@ -1210,7 +1210,7 @@ ggplot(data = diamonds) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-138](figure/unnamed-chunk-138-1.png)
+![plot of chunk unnamed-chunk-38](figure/unnamed-chunk-38-1.png)
 
 
 ``` r
@@ -1238,7 +1238,7 @@ ggplot(data = diamonds) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-139](figure/unnamed-chunk-139-1.png)
+![plot of chunk unnamed-chunk-39](figure/unnamed-chunk-39-1.png)
 
 Question: Does anyone notice anything different in the colour scheme of this plot?
 (Hint: It's in the viridis colour palette (colour blind friendly), but why is it different from the colour palette we used earlier?) 
@@ -1273,7 +1273,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-140](figure/unnamed-chunk-140-1.png)
+![plot of chunk unnamed-chunk-40](figure/unnamed-chunk-40-1.png)
 
 
 ``` r
@@ -1301,7 +1301,7 @@ ggplot(data = diamonds, mapping = aes(x = color, y = depth)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-141](figure/unnamed-chunk-141-1.png)
+![plot of chunk unnamed-chunk-41](figure/unnamed-chunk-41-1.png)
 
 In the first plot, different colors indicates vehicle class for each engine size (numeric) on the x-axis, so the points are spread out. In the second plot, different colors indicates the cut of the diamond, organizing the points in vertical lines according to the category on the x-axis.
 
@@ -1335,7 +1335,7 @@ ggplot(data = diamonds) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-142](figure/unnamed-chunk-142-1.png)
+![plot of chunk unnamed-chunk-42](figure/unnamed-chunk-42-1.png)
 
 # To alter transparency (alpha)
 
@@ -1365,7 +1365,7 @@ ggplot(data = diamonds, mapping = aes(x = cut, fill = clarity)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-143](figure/unnamed-chunk-143-1.png)
+![plot of chunk unnamed-chunk-43](figure/unnamed-chunk-43-1.png)
 
 
 # To color the bar outlines with no fill color
@@ -1396,7 +1396,7 @@ ggplot(data = diamonds, mapping = aes(x = cut, colour = clarity)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-144](figure/unnamed-chunk-144-1.png)
+![plot of chunk unnamed-chunk-44](figure/unnamed-chunk-44-1.png)
 
 # Position adjustments
 
@@ -1428,7 +1428,7 @@ ggplot(data = diamonds) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-145](figure/unnamed-chunk-145-1.png)
+![plot of chunk unnamed-chunk-45](figure/unnamed-chunk-45-1.png)
 
 # Position = "dodge"
 
@@ -1460,7 +1460,7 @@ ggplot(data = diamonds) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-146](figure/unnamed-chunk-146-1.png)
+![plot of chunk unnamed-chunk-46](figure/unnamed-chunk-46-1.png)
 
 # Jittering
 
@@ -1488,7 +1488,7 @@ ggplot(data = mpg) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-147](figure/unnamed-chunk-147-1.png)
+![plot of chunk unnamed-chunk-47](figure/unnamed-chunk-47-1.png)
 
 # ASSIGNMENT: PLOT DECONSTRUCTION
 
@@ -1596,7 +1596,7 @@ bananas_plot <-
 bananas_plot
 ```
 
-![plot of chunk unnamed-chunk-150](figure/unnamed-chunk-150-1.png)
+![plot of chunk unnamed-chunk-50](figure/unnamed-chunk-50-1.png)
 
 ``` r
 ggsave("bananas_plot.pdf") 
@@ -1689,7 +1689,7 @@ ggplot(table1, aes(year, cases)) +
 ## caratteri di Windows
 ```
 
-![plot of chunk unnamed-chunk-151](figure/unnamed-chunk-151-1.png)
+![plot of chunk unnamed-chunk-51](figure/unnamed-chunk-51-1.png)
 
 # Table 2
 
@@ -2479,7 +2479,7 @@ p_comp <- ggplot(long_species_clean, aes(x = Area, y = Count, fill = Species)) +
 p_comp
 ```
 
-![plot of chunk unnamed-chunk-170](figure/unnamed-chunk-170-1.png)
+![plot of chunk unnamed-chunk-70](figure/unnamed-chunk-70-1.png)
 
 ``` r
 ggsave("sharks_composition_by_area.pdf", p_comp, width = 10, height = 8)
@@ -2514,7 +2514,7 @@ p_total <- ggplot(area_totals_ranked, aes(x = Total, y = Area_f)) +
 p_total
 ```
 
-![plot of chunk unnamed-chunk-171](figure/unnamed-chunk-171-1.png)
+![plot of chunk unnamed-chunk-71](figure/unnamed-chunk-71-1.png)
 
 ``` r
 ggsave("sharks_totals_lollipop.pdf", p_total, width = 10, height = 8)
