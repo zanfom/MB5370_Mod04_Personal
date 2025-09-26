@@ -34,7 +34,7 @@ summary(mpg)
 # Create first plot
 ```{r}
 ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = disp, y = hwy))
+  geom_point(mapping = aes(x = displ, y = hwy))
 ```
 
 The plot shows a negative relationship between engine size (displ) and fuel efficiency (hwy). In other words, cars with big engines use more fuel. What does this say about fuel efficiency and engine size?
@@ -93,13 +93,7 @@ ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
 ```
 
-
 # Troubleshooting 
-
-
-
-
-
 
 # Faceting
 
@@ -130,20 +124,34 @@ ggplot(data = mpg) +
   #facet_grid(. ~ cyl) # Alternatively
 
 ```
+#Facet_grid(. ~ cyl) Alternatively
 
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(. ~ cyl)
+
+```
 # Exercise:
 Read ?facet_wrap. What does nrow do? What does ncol do? What other options control the layout of the individual panels? 
 
-```{r}
-
-```
-
+1) "nrow" dictates the number of rows in the layout of the individual panels, like "ncol" for the number of columns.
+2) "dir" dictates the order of the individual panels (left --> right; top --> bottom etc)
+3) "space" dictates whether panel sizes stay the same or stretch with the data ranges
+4)"scales" dictates whether axes stay the same across panels
+5) "drop" dictates if unused factor levels are hidden in the final graph or allowed to show
+6) "axes" dictates whether axes are drawn only on the outside or also inside the grid
+7) "axis.labels" decides where tick labels appear (only on the outside, or everywhere)
+8) "labeller" dictates how the facet labels are formatted and styled
+9) "switch" decides if labels appear at the bottom or left instead of the default spots
+10) "shrink" decides whether panels zoom in to the summary data or keep the full range.
+11) "facets" dictates which variable(s) are used to split the data into panels.
 
 # Lines
 We already used points:
 ```{r}
 ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = displx, y = hwy))
+  geom_point(mapping = aes(x = displ, y = hwy))
 ```
 
 
@@ -154,28 +162,27 @@ However, ggplot2 can use a variety of geom objects to represent the data. Here, 
 ggplot(data = mpg) + 
   geom_smooth(mapping = aes(x = displ, y = hwy))
 ```
-### Question: whey don't we use geom_line() here? What would that look like? ###
+### Question: when don't we use geom_line() here? What would that look like? ###
 
-
-So let’s recap. A geom is an object that your plot uses to represent the data. To change the geom type in your plot, simply change the geom function that you add to your plot template. Sometimes you may want to try a few things out, in which case you could use comments to help you remember what worked and what didn’t. 
+RECAP: A geom is an object that your plot uses to represent the data. To change the geom type in your plot, simply change the geom function that you add to your plot template. Sometimes you may want to try a few things out, in which case you could use comments to help you remember what worked and what didn’t. 
 
 ## Using comments (#)
 ```{r}
 ggplot(data = mpg) + 
   #geom_point(mapping = aes(x = displ, y = hwy)) + # points horrible 
-  geom_smooth(mappings = aes(x = displ, y = hwy)) # try smooth line
+  geom_smooth(mapping = aes(x = displ, y = hwy)) # try smooth line
 ```
 
 Question: how does R work out where to plot the line??? Can use the chunk output to inform us. Can also use the help menu.
 
-# Changing linetype
+# Changing linetype ( use a variable to control it)
 ```{r}
 ggplot(data = mpg) + 
   geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv)) # Can also use "lty = " for the same result
 ```
 
 
-# Grouping
+# Grouping objects by a categorical variable to draw multiple objects
 ```{r}
 ggplot(data = mpg) +
   geom_smooth(mapping = aes(x = displ, y = hwy, group = drv))
@@ -194,7 +201,7 @@ ggplot(data = mpg) +
 We already did this one way
 ```{r}
 ggplot(data = mpg) + 
-  geom_point(mapping = aes(xx = displ, y = hwy)) +
+  geom_point(mapping = aes(x = displ, y = hwy)) +
   geom_smooth(mapping = aes(x = displ, y = hwy))
 ```
 
@@ -215,20 +222,38 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 
 Now we have different colours to indicate the raw data (geom_point) and one colour for the overall relationship (geom_smooth). Neat!
 
-
+# The same goes if you want to specify different data for each layer. 
+Use a filter (class = "subcompact") to select a subset of the data and plot only that subset. 
 ```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point(mapping = aes(color = class)) + 
   geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)
 ```
-Question: what does the "se = FALSE" do?
-
+Question: what does the "se = FALSE" do? It tells geom_smooth() not to draw the 95% confidence band around the smooth line.
 
 # Exercise:
-1.  What geom would you use to draw a line chart? A boxplot? A histogram? An area chart?
+1.  What geom would you use to draw a line chart? geom_line(). A boxplot? geom_boxplot(). A histogram? geom_histogram(). An area chart? geom_area().
 2.  Run this code in your head and predict what the output will look like. Then, run the code in R and check your predictions.
 
 ```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(color = class)) + 
+  geom_line()
+
+ggplot(data = mpg, mapping = aes(x = class, y = hwy, fill = class)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_point(position = position_jitter(width = 0.15), colour = "black", size = 1.1) +
+  guides(fill = "none")
+
+ggplot(data = mpg, mapping = aes(x = displ)) +
+  geom_histogram()
+
+ggplot(data = mpg, mapping = aes(x = displ)) +
+  geom_histogram() +
+  facet_wrap(~ class, ncol = 3)
+
+ggplot(data = mpg, mapping = aes(x = displ, fill = class)) +
+  geom_area(stat = "bin", position = "stack", bins = 20, alpha = 0.7)
 
 ```
 
@@ -243,7 +268,7 @@ ggplot() +
   geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
 ```
-
+The two code blocks produce identical looking figures, but the difference lays in the fact that in the first plot there is aes(x= displ, y= hwy) set in mapping globally then adding geom_point() and geom_smooth(), while in the second the same data/mappings are given per each layer specifically.
 
 # Transformations and stats
 
@@ -258,6 +283,7 @@ glimpse(diamonds)
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut))
 ```
+On the x-axis we have the "cut" variable from the "diamonds" data set, whileon the y-axis the bin counts for each type of cut.
 
 # Overriding defaults
 Make some new data
@@ -278,17 +304,14 @@ demo
 ggplot(data = demo) +
   geom_bar(mapping = aes(x = cut, y = freq), stat = "identity")
 ```
-Question: Why did we specify now specify a y axis?
+Question: Why did we specify now specify a y axis? We stored counts in "freq" data set, so compared to the previous bar plot where we were plotting raw data, now were have to specify y = freq in order to use the numbers instead of counting rows.
 
 # What if we want to know the proportion rather than the absolute frequency?
 ```{r}
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, y = stat(prop), group = 1))
 ```
-
-Question: does anyone get the warning that's in the workbook?
-Warning: `stat(prop)` was deprecated in ggplot2 3.4.0.
-If so, can use # geom_bar(mapping = aes(x = cut, y = stage(after_stat = prop), group = 1))
+In this bar plot we are displaying the proportion of the total diamond data set rather that a count.
 
 # Plotting statistical details
 ```{r}
@@ -312,7 +335,10 @@ ggplot(data = diamonds) +
   geom_bar(mapping = aes(x = cut, fill = cut))
 ```
 Question: Does anyone notice anything different in the colour scheme of this plot?
-(Hint: It's in the viridis colour palette (colour blind friendly), but why is it different from the colour palette we used earlier?)
+(Hint: It's in the viridis colour palette (colour blind friendly), but why is it different from the colour palette we used earlier?) 
+
+It looks different because in the first bar plot we changed colors for the outline of the bars, while in the second bar plot we changes the colors of the inside fill, even though we use viridis palette in both.
+
 Check out the difference:
 ```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
@@ -321,7 +347,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 ggplot(data = diamonds, mapping = aes(x = color, y = depth)) + 
   geom_point(mapping = aes(color = cut)) 
 ```
-
+In the first plot, different colors indicates vehicle class for each engine size (numeric) on the x-axis, so the points are spread out. In the second plot, different colors indicates the cut of the diamond, organizing the points in vertical lines according to the category on the x-axis.
 
 # Filling by a variable
 Now try using these aesthetics to colour by another variable like clarity. Notice how the stacking is done automatically. This is done behind the scenes with a position argument.
@@ -364,10 +390,70 @@ ggplot(data = diamonds) +
 position = "jitter" adds a small amount of random noise to each point to avoid overplotting when points overlap. This is useful for scatterplots but not barplots.
 ```{r}
 ggplot(data = mpg) + 
-  #geom_point(mapping = aes(x = displ, y = hwy), position = "jitter")
-  geom_point(mapping = aes(x = displ, y = hwy))
-```
+  geom_point(mapping = aes(x = displ, y = hwy), position = "jitter")
 
+```
+```{r}
+setwd(('C:/Users/miria/OneDrive - James Cook University/Github/MB5370_Mod04_Personal/data'))
+
+```
+# ASSIGNMENT: PLOT DECONSTRUCTION
+
+# 1) Original Plot
+This chart shows [main relationship/message] for [population/region/time]. However, it [problem 1] and [problem 2], which can mislead the reader about [effect/context]. Data from [source + year(s)]; I digitised values where needed.
+
+```{r}
+
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(gridExtra)
+
+setwd(('C:/Users/miria/OneDrive - James Cook University/Github/MB5370_Mod04_Personal/data'))
+faostat <- read_csv2("data/faostat_bananas.csv",   # or the right path
+                     show_col_types = FALSE,
+                     col_types = cols(
+                       Area  = col_character(),
+                       Year  = col_integer(),
+                       Value = col_double()
+                     ))
+
+faostat_bananas <- readr::read_csv("../data/faostat_bananas.csv", show_col_types = FALSE)
+
+bananas <- gather(faostat_bananas, "Area", "Year", "Value")
+
+# basic cleaning
+faostat <- ban |>
+  mutate(
+    Area = as.factor(Area),
+    Year = as.integer(Year),
+    Value = as.double(Value)
+  )
+
+# total exports by year (for % shares and reference line)
+ban_tot <- ban |>
+  group_by(Year) |>
+  summarise(Total = sum(Value, na.rm = TRUE), .groups = "drop")
+ban_tot
+# pick "key" exporters (top 4 by mean exports across all years)
+top_exporters <- ban |>
+  group_by(Area) |>
+  summarise(mean_t = mean(Value, na.rm = TRUE), .groups = "drop") |>
+  slice_max(mean_t, n = 4) |>
+  pull(Area)
+
+ban <- ban |>
+  left_join(ban_tot, by = "Year") |>
+  mutate(share = Value / Total)
+
+# dataframe with last year for direct endpoint labels
+end_year <- max(ban$Year, na.rm = TRUE)
+end_pts <- ban |>
+  filter(Year == end_year) |>
+  arrange(desc(Value))
+```
 
 
 
