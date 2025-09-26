@@ -393,74 +393,214 @@ ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy), position = "jitter")
 
 ```
-```{r}
-setwd(('C:/Users/miria/OneDrive - James Cook University/Github/MB5370_Mod04_Personal/data'))
-
-```
 # ASSIGNMENT: PLOT DECONSTRUCTION
 
 # 1) Original Plot
-This chart shows [main relationship/message] for [population/region/time]. However, it [problem 1] and [problem 2], which can mislead the reader about [effect/context]. Data from [source + year(s)]; I digitised values where needed.
+This chart shows annual banana export volumes for major exporting countries (1994–2005). However, the overlapping 3D bars hide trends within and between countries and make it difficult to distinguish values in the back rows. The colors used are from a strong palette, which is not particularly colorblind friendly. Additionally, the banana picture in the background reduces clarity. These trends could be shown more clearly in a 2D format using a line chart. I digitised values where needed from the FAOSTAT’s country–year export totals data set.
 
+# Import data set
 ```{r}
 
-library(tidyverse)
-library(tidyr)
-library(dplyr)
 library(ggplot2)
-library(readr)
-library(gridExtra)
+library(dplyr)
+library(tidyr)
+library(viridis)
+library(scales)
+library(hrbrthemes)
 
-setwd(('C:/Users/miria/OneDrive - James Cook University/Github/MB5370_Mod04_Personal/data'))
-faostat <- read_csv2("data/faostat_bananas.csv",   # or the right path
-                     show_col_types = FALSE,
-                     col_types = cols(
-                       Area  = col_character(),
-                       Year  = col_integer(),
-                       Value = col_double()
-                     ))
-
-faostat_bananas <- readr::read_csv("../data/faostat_bananas.csv", show_col_types = FALSE)
-
-bananas <- gather(faostat_bananas, "Area", "Year", "Value")
-
-# basic cleaning
-faostat <- ban |>
-  mutate(
-    Area = as.factor(Area),
-    Year = as.integer(Year),
-    Value = as.double(Value)
-  )
-
-# total exports by year (for % shares and reference line)
-ban_tot <- ban |>
-  group_by(Year) |>
-  summarise(Total = sum(Value, na.rm = TRUE), .groups = "drop")
-ban_tot
-# pick "key" exporters (top 4 by mean exports across all years)
-top_exporters <- ban |>
-  group_by(Area) |>
-  summarise(mean_t = mean(Value, na.rm = TRUE), .groups = "drop") |>
-  slice_max(mean_t, n = 4) |>
-  pull(Area)
-
-ban <- ban |>
-  left_join(ban_tot, by = "Year") |>
-  mutate(share = Value / Total)
-
-# dataframe with last year for direct endpoint labels
-end_year <- max(ban$Year, na.rm = TRUE)
-end_pts <- ban |>
-  filter(Year == end_year) |>
-  arrange(desc(Value))
+faostat<- readr::read_delim("../data/faostat_bananas.csv",
+  delim = ";",
+  col_names = c("Area", "Year", "Value"),
+  skip = 1,
+  show_col_types = FALSE) %>%
+  mutate(Year  = as.integer(Year), Value = as.numeric(Value)) 
 ```
 
+# Tidy
+Consider the Area (which is the country), the Year and the Value (which is the amount of bananas exported in tonnes).
+Analyse each country for  banana exports, then rank them accordingly
+```{r}
+bananas <- faostat %>%
+  mutate(Year  = as.integer(Year), Value = as.numeric(Value)) %>%
+  filter(!is.na(Area), !is.na(Year), !is.na(Value), Year >= 1994, Year <= 2005)
 
+top_11 <- bananas %>%
+  group_by(Area) %>%
+  summarise(total_9405 = sum(Value, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(total_9405)) %>%
+  slice(1:11) %>%
+  pull(Area)
 
+bananas_top <- bananas %>% filter(Area %in% top_11)
+```
 
+# Plot
+This line graph compares the annual banana export volumes in tonnes of the world's leading exporters. Ecuador consistently dominates the market, showing a steady increase from around 3 million tonnes in 1994 to over 4.5 million tonnes in 2005. Other major exporters include Costa Rica, the Philippines and Colombia, which export between 1 and 2 million tonnes of bananas per year, although with differing trends. Finally, smaller exporters such as Panama, Honduras, Belgium-Luxembourg, the United States, Cameroon and the United Arab Emirates contribute to a lesser extent (<1 million tonnes) to this market, with relatively stable or declining trends. Source: Food and Agriculture Organisation of the United Nations (FAOSTAT, Agricultural and livestock products).
 
+```{r}
+y_max <- ceiling(max(bananas_top$Value, na.rm = TRUE) / 500000) * 500000
+theme_set(theme_minimal(base_family = "Lato"))
 
+theme_update(
+  axis.title = element_blank(),
+  axis.text = element_text(color = "grey30"),
+  axis.text.x = element_text(size = 12, margin = margin(t = 4)),
+  axis.text.y = element_text(size = 12, margin = margin(r = 4)),
+  panel.grid = element_blank(),
+  plot.margin = margin(15, 60, 15, 20),
+  plot.background = element_rect(fill = "grey98", color = NA),
+  panel.background = element_rect(fill = "grey98", color = NA),
+  plot.title = element_text(face = "bold", size = 16, color = "grey10"),
+  plot.subtitle = element_markdown(size = 12, color = "grey35", lineheight = 1.25),
+  plot.caption = element_text(size = 10, color = "grey40"),
+  legend.position = "none")
 
+bananas_plot <-
+  ggplot(bananas_top, aes(Year, Value, color = Area, group = Area)) +
+  geom_vline(xintercept = seq(min_year, max_year, by = 2), color = "grey90", linewidth = 0.5) +
+  geom_hline(yintercept = 0, color = "grey85", linewidth = 0.5) +
+  geom_line(linewidth = 0.9, alpha = 0.9) +
+  geom_point(size = 1.2, alpha = 0.85) +
+  scale_x_continuous(
+    limits = c(min_year, max_year),
+    breaks = seq(min_year, max_year, by = 2),
+    expand = expansion(mult = c(0.01, 0.02))) +
+  scale_y_continuous(
+    labels = scales::comma,
+    breaks = seq(0, y_max, by = 500000)) +
+  scale_color_viridis_d(option = "C", end = 0.95, name = "Country") +
+  coord_cartesian(clip = "off") +
+  labs(
+    title = "Banana Exports by Country (Tonnes)",
+    subtitle = "Top 11 exporters, 1994–2005",
+    x = "Year", y = "Tonnes",
+    caption  = "Source: FAOSTAT") +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "grey98", color = NA),
+    panel.background = element_rect(fill = "grey98", color = NA),
+    legend.position = "right",
+    legend.title = element_text(face = "bold")) +
+  guides(color = guide_legend(ncol = 1))
+
+bananas_plot
+ggsave("bananas_plot.pdf") 
+```
+
+# END-TO-END DATA ANALYSIS IN R
+Title: "Shark counts by location and category"
+
+The aim of this plot is showing the process of tidying the chosen dataset and producing a grouped bar chart in order to compare the counts of sharks differing in length (< 2 m, ≥ 2 m) and non-shark counts across different area in NQ.
+
+# Import data-set
+```{r}
+sharks <- readr::read_delim("../data/counts_sharks.csv")
+```
+
+# Tidy data-set
+I excluded the "Grand total" column and reshaped the table into a long format, then organized the order of the categories in the plot and legend. Finally, I computed the per-area totals to order the areas by sample size (descending) for easier visual comparison.
+```{r}
+long_format <- sharks |>
+  filter(Area != "Grand Total") |>
+  pivot_longer(
+    cols = c(`< 2m`, `>= 2m`, `Non-shark`),
+    names_to = "LengthCategory",
+    values_to = "Count") |>
+  mutate(LengthCategory = factor(LengthCategory, levels = c("< 2m", ">= 2m", "Non-shark"))) |>
+  group_by(Area) |>
+  mutate(AreaTotal = sum(Count, na.rm = TRUE)) |>
+  ungroup() |>
+  mutate(Area = fct_reorder(Area, AreaTotal, .desc = TRUE))
+```
+
+# Plot
+Shark length counts by area and category. Horizontal grouped bars show raw counts of < 2 m, ≥ 2 m, and non-shark observations for each area. Colors use a color-blind–safe palette.
+```{r}
+theme_clean <- function(base_size = 12){
+  theme_classic(base_size = base_size) +
+    theme(
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor   = element_blank(),
+      axis.ticks         = element_blank(),
+      axis.text.y        = element_text(face = "bold"),
+      plot.title         = element_text(face = "bold"),
+      legend.position    = "right",
+      legend.title       = element_text(face = "bold"),
+      legend.box         = "vertical",
+      plot.caption       = element_text(color = "grey40", size = 9))}
+pos <- position_dodge2(width = 0.8, padding = 0.15, preserve = "single")
+
+sharks_plot <- ggplot(long_format, aes(x = Area, y = Count, fill = LengthCategory)) +
+  geom_col(position = pos, width = 0.72) +
+  coord_flip() +
+  scale_y_continuous(labels = comma, expand = expansion(mult = c(0.02, 0.04))) +
+  scale_fill_viridis_d(
+    option = "C", begin = 0.15, end = 0.9,
+    labels = c("< 2 m", "≥ 2 m", "Non-shark")) +
+  labs(title = "Shark length counts by area and category", x = NULL, y = "Count", fill = "Category", caption = "Data: Department of Agriculture and Fisheries (QFish)") +
+  theme_clean()
+
+sharks_plot
+ggsave("sharks_plot.pdf")
+
+```
+
+# DATA WRANGLING IN R
+
+# Table 1.0
+Each row represents a country in a given year, with its specific values for the variables (cases and population) stored in separate columns.
+```{r}
+library(tidyverse)
+table1
+
+table1 %>% 
+  mutate(rate = cases / population * 10000)
+
+table1 %>% 
+  count(year, wt = cases)
+
+library(ggplot2)
+ggplot(table1, aes(year, cases)) + 
+  geom_line(aes(group = country), colour = "grey50") + 
+  geom_point(aes(colour = country))
+```
+
+# Table 2
+Each row shows either cases or population for a country in a given year, with variable names stored as values.
+```{r}
+table2
+
+table2 %>%
+  pivot_wider(names_from = type, values_from = count) %>%
+  mutate(
+    cases = as.numeric(cases),
+    population = as.numeric(population),
+    rate_per_10000 = cases / population * 10000
+  )
+
+```
+# Table 3
+Each row shows a country in a given year, but cases and population are combined into one string in a single column.
+```{r}
+table3
+
+table3 %>% 
+  separate(rate, into = c("cases", "population"), convert = TRUE)  %>%
+  mutate(
+    cases = as.numeric(cases),
+    population = as.numeric(population),
+    rate_per_10000 = cases / population * 10000
+  )
+
+```
+# Lengthening datasets
+
+```{r}
+billboard
+
+```
 
 
 
