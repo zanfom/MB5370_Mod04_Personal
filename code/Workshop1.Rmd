@@ -639,6 +639,76 @@ preg %>%
 
 ```
 
+# Separating and uniting data tables
+The separate() function separates one column into multiple columns. 
+- Convert = TRUE is used to convert the values in the columns to better types.
+- Separate() will interpret the integers as positions to split at. Positive values start at 1 on the far-left of the strings; negative values start at -1 on the far-right of the strings.
+- To perform the inverse of separate() we use unite() to combine multiple columns into a single column.
+```{r}
+table3
+
+table3 %>% 
+  separate(rate, into = c("cases", "population"), convert = TRUE)
+
+table3 %>% 
+  separate(year, into = c("century", "year"), sep = 2)
+
+table5
+
+table5 %>% 
+  unite(new, century, year, sep = "")
+```
+
+# Handling missing values
+
+1) Explicit missing values indicate the present of absent data
+2) Implicit missing values indicate absent data (blank cell)
+```{r}
+treatment <- tribble(
+  ~person,           ~treatment, ~response,
+  "Derrick Whitmore", 1,         7,
+  NA,                 2,         10,
+  NA,                 3,         NA,
+  "Katherine Burke",  1,         4
+)
+
+treatment |>
+  fill(everything())
+```
+
+Sometimes missing values represent some fixed and known value, most commonly 0. You can use dplyr::coalesce() to replace them.
+```{r}
+x <- c(1, 4, 5, 7, NA)
+coalesce(x, 0)
+
+```
+3) NaN
+```{r}
+x <- c(NA, NaN)
+x * 10
+
+x == 1
+
+is.na(x)
+```
+2) Implicit missing values indicate absent data (blank cell).
+The price in the fourth quarter of 2020 is explicitly missing, because its value is NA.
+The price for the first quarter of 2021 is implicitly missing, because it simply does not appear in the dataset.
+
+```{r}
+stocks <- tibble(
+  year  = c(2020, 2020, 2020, 2020, 2021, 2021, 2021),
+  qtr   = c(   1,    2,    3,    4,    2,    3,    4),
+  price = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+)
+
+stocks |>
+  pivot_wider(
+    names_from = qtr, 
+    values_from = price
+  )
+```
+
 # END-TO-END DATA ANALYSIS IN R
 Title: "Shark counts by location and category"
 
