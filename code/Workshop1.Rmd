@@ -8,30 +8,25 @@ date: "2024-03-22"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Workshop 04. Introduction
 
-
-# Install and load tidyverse packages
-```{r}
-## install.packages("tidyverse") # Delete this line once installed
-library("tidyverse")
-```
-
+This page explores the use of data file systems and programming tools to access, organise, analyse and visualise large datasets.
 
 # Load the data (mpg is built into ggplot2)
+
 ```{r}
 data(mpg)
 ```
 
+# Quick data checks list
 
-# Quick data checks
 ```{r}
 head(mpg)
 glimpse(mpg)
 summary(mpg)
 ```
+# Create your first plot
 
-
-# Create first plot
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy))
@@ -39,40 +34,41 @@ ggplot(data = mpg) +
 
 The plot shows a negative relationship between engine size (displ) and fuel efficiency (hwy). In other words, cars with big engines use more fuel. What does this say about fuel efficiency and engine size?
 
+# 1. Understanding the grammar of graphics
 
-
-# Understanding grammar of graphics
 What happens if we just try to run ggplot on its own?
+
 ```{r}
 ggplot() 
 # Or with just the data specified?
 ggplot(data = mpg)
 ```
-
 We need to map some aesthetics!!
 
-# When you’re creating a plot, you essentially need two attributes of a plot: a geom and aesthetics.
+# When you’re creating a plot, you essentially need TWO attributes of a plot: a geom and aesthetics
+
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, colour = class))
 ```
 
+# Change POINT COLOR by class
 
-# Change point colour by class:
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, colour = class))
 ```
 
-# Change point size by class:
+# Change POINT SIZE by class
+
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, size = class))
 ```
 Note the warning!!!
 
+# Change TRANSPARENCY (alpha) by class
 
-# Change transparency (alpha) by class
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, alpha = class))
@@ -80,31 +76,31 @@ ggplot(data = mpg) +
 Another warning!!
 Question: When would using alpha (or size be appropriate??)
 
-# Change point shape by class:
+# Change POINT SHAPE by class
+
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, shape = class))
 ```
 
-
 # Make all points blue
+
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
 ```
 
-# Troubleshooting 
-
 # Faceting
 
 ## facet_wrap
+
 Split the plot out by car type (class)
+
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy)) + 
   facet_wrap(~ class, nrow = 2)
 ```
-
 
 ## facet_grid
 A separate facet for each combination of drive-type (e.g. 4WD) * number of cylinders
@@ -115,7 +111,6 @@ ggplot(data = mpg) +
 ```
 Note that there are no occurrences of 5 cylinder 4WDs OR RWD vehicles!
 
-
 ## facet_grid by just row (or column)
 ```{r}
 ggplot(data = mpg) + 
@@ -124,7 +119,7 @@ ggplot(data = mpg) +
   #facet_grid(. ~ cyl) # Alternatively
 
 ```
-#Facet_grid(. ~ cyl) Alternatively
+## facet_grid: (. ~ cyl) alternatively
 
 ```{r}
 ggplot(data = mpg) + 
@@ -132,7 +127,8 @@ ggplot(data = mpg) +
   facet_grid(. ~ cyl)
 
 ```
-# Exercise:
+# 1. Exercise
+
 Read ?facet_wrap. What does nrow do? What does ncol do? What other options control the layout of the individual panels? 
 
 1) "nrow" dictates the number of rows in the layout of the individual panels, like "ncol" for the number of columns.
@@ -147,48 +143,50 @@ Read ?facet_wrap. What does nrow do? What does ncol do? What other options contr
 10) "shrink" decides whether panels zoom in to the summary data or keep the full range.
 11) "facets" dictates which variable(s) are used to split the data into panels.
 
-# Lines
+# 1.2 Lines
+
 We already used points:
+
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy))
 ```
 
-
 However, ggplot2 can use a variety of geom objects to represent the data. Here, we might want to use bar plots, line charts, boxplots and so on. Well we can handle this issue in ggplot directly using a different geom to plot the same data. Here, instead of plotting points, we will use a smooth line. 
 
-# To display the same data as a smooth line fit through the points use geom_smooth().
+## To display the same data as a smooth line fit through the points use geom_smooth().
+
 ```{r}
 ggplot(data = mpg) + 
   geom_smooth(mapping = aes(x = displ, y = hwy))
 ```
-### Question: when don't we use geom_line() here? What would that look like? ###
+Question: when don't we use geom_line() here? What would that look like?
 
 RECAP: A geom is an object that your plot uses to represent the data. To change the geom type in your plot, simply change the geom function that you add to your plot template. Sometimes you may want to try a few things out, in which case you could use comments to help you remember what worked and what didn’t. 
 
-## Using comments (#)
 ```{r}
 ggplot(data = mpg) + 
   #geom_point(mapping = aes(x = displ, y = hwy)) + # points horrible 
   geom_smooth(mapping = aes(x = displ, y = hwy)) # try smooth line
 ```
-
 Question: how does R work out where to plot the line??? Can use the chunk output to inform us. Can also use the help menu.
 
 # Changing linetype ( use a variable to control it)
+
 ```{r}
 ggplot(data = mpg) + 
   geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv)) # Can also use "lty = " for the same result
 ```
 
-
 # Grouping objects by a categorical variable to draw multiple objects
+
 ```{r}
 ggplot(data = mpg) +
   geom_smooth(mapping = aes(x = displ, y = hwy, group = drv))
 ```
  
 # Change line colour based on drv value
+
 ```{r}
 ggplot(data = mpg) +
   geom_smooth(
@@ -198,22 +196,23 @@ ggplot(data = mpg) +
 ```
 
 # Multiple geoms
-We already did this one way
+
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy)) +
   geom_smooth(mapping = aes(x = displ, y = hwy))
 ```
 
-A better way...
+# A better way...
+
 ```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point() + 
   geom_smooth()
 ```
 
+# Can still manipulate each geom/layer separately
 
-# Can still manipulate each geom/layer separately:
 ```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point(mapping = aes(color = class)) + 
@@ -223,15 +222,20 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 Now we have different colours to indicate the raw data (geom_point) and one colour for the overall relationship (geom_smooth). Neat!
 
 # The same goes if you want to specify different data for each layer. 
-Use a filter (class = "subcompact") to select a subset of the data and plot only that subset. 
+
+Use a filter (class = "subcompact") to select a subset of the data and plot only that subset.
+
 ```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point(mapping = aes(color = class)) + 
   geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)
 ```
-Question: what does the "se = FALSE" do? It tells geom_smooth() not to draw the 95% confidence band around the smooth line.
 
-# Exercise:
+Question: what does the "se = FALSE" do? 
+It tells geom_smooth() not to draw the 95% confidence band around the smooth line.
+
+# Exercise
+
 1.  What geom would you use to draw a line chart? geom_line(). A boxplot? geom_boxplot(). A histogram? geom_histogram(). An area chart? geom_area().
 2.  Run this code in your head and predict what the output will look like. Then, run the code in R and check your predictions.
 
@@ -239,54 +243,70 @@ Question: what does the "se = FALSE" do? It tells geom_smooth() not to draw the 
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point(mapping = aes(color = class)) + 
   geom_line()
+```
 
+```{r}
 ggplot(data = mpg, mapping = aes(x = class, y = hwy, fill = class)) +
   geom_boxplot(alpha = 0.7) +
   geom_point(position = position_jitter(width = 0.15), colour = "black", size = 1.1) +
   guides(fill = "none")
+```
 
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ)) +
   geom_histogram()
+```
 
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ)) +
   geom_histogram() +
   facet_wrap(~ class, ncol = 3)
+```
 
+```{r}
 ggplot(data = mpg, mapping = aes(x = displ, fill = class)) +
   geom_area(stat = "bin", position = "stack", bins = 20, alpha = 0.7)
 
 ```
 
 
-3.  Will these two graphs look different? Why/why not?
+# Will these two graphs look different? Why/why not?
+
 ```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point() + 
   geom_smooth()
+```
 
+```{r}
 ggplot() + 
   geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
 ```
 The two code blocks produce identical looking figures, but the difference lays in the fact that in the first plot there is aes(x= displ, y= hwy) set in mapping globally then adding geom_point() and geom_smooth(), while in the second the same data/mappings are given per each layer specifically.
 
-# Transformations and stats
+# 2. Transformations and stats
 
 ## Load data
+
 ```{r}
 data("diamonds")
 glimpse(diamonds)
 ```
 
 # Bar plot
+
 ```{r}
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut))
 ```
+
 On the x-axis we have the "cut" variable from the "diamonds" data set, whileon the y-axis the bin counts for each type of cut.
 
 # Overriding defaults
+
 Make some new data
+
 ```{r}
 demo <- tribble(
   ~cut,         ~freq,
@@ -299,21 +319,25 @@ demo <- tribble(
 demo
 ```
 
-
 ```{r}
 ggplot(data = demo) +
   geom_bar(mapping = aes(x = cut, y = freq), stat = "identity")
 ```
-Question: Why did we specify now specify a y axis? We stored counts in "freq" data set, so compared to the previous bar plot where we were plotting raw data, now were have to specify y = freq in order to use the numbers instead of counting rows.
+
+Question: Why did we specify now specify a y axis? 
+We stored counts in "freq" data set, so compared to the previous bar plot where we were plotting raw data, now were have to specify y = freq in order to use the numbers instead of counting rows.
 
 # What if we want to know the proportion rather than the absolute frequency?
+
 ```{r}
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, y = stat(prop), group = 1))
 ```
+
 In this bar plot we are displaying the proportion of the total diamond data set rather that a count.
 
 # Plotting statistical details
+
 ```{r}
 ggplot(data = diamonds) + 
   stat_summary(
@@ -324,40 +348,50 @@ ggplot(data = diamonds) +
   )
 ```
 
-
 # Aesthetic adjustments adjustments
+
 Another way to boost the way you can convey information with plots using ggplot2 is to use aesthetics like colour or fill to change aspects of bar colours. We already did this once, but there are multiple options available to you, including changing the fill our outline colours.
 
 ```{r}
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, colour = cut))
+```
+
+```{r}
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, fill = cut))
 ```
+
 Question: Does anyone notice anything different in the colour scheme of this plot?
 (Hint: It's in the viridis colour palette (colour blind friendly), but why is it different from the colour palette we used earlier?) 
 
 It looks different because in the first bar plot we changed colors for the outline of the bars, while in the second bar plot we changes the colors of the inside fill, even though we use viridis palette in both.
 
-Check out the difference:
+# Check out the difference:
+
 ```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
   geom_point(mapping = aes(color = class)) 
+```
 
+```{r}
 ggplot(data = diamonds, mapping = aes(x = color, y = depth)) + 
   geom_point(mapping = aes(color = cut)) 
 ```
+
 In the first plot, different colors indicates vehicle class for each engine size (numeric) on the x-axis, so the points are spread out. In the second plot, different colors indicates the cut of the diamond, organizing the points in vertical lines according to the category on the x-axis.
 
 # Filling by a variable
+
 Now try using these aesthetics to colour by another variable like clarity. Notice how the stacking is done automatically. This is done behind the scenes with a position argument.
+
 ```{r}
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, fill = clarity))
 ```
 
-
 # To alter transparency (alpha)
+
 ```{r}
 ggplot(data = diamonds, mapping = aes(x = cut, fill = clarity)) + 
   geom_bar(alpha = 1/5, position = "identity")
@@ -365,40 +399,48 @@ ggplot(data = diamonds, mapping = aes(x = cut, fill = clarity)) +
 
 
 # To color the bar outlines with no fill color
+
 ```{r}
 ggplot(data = diamonds, mapping = aes(x = cut, colour = clarity)) + 
   geom_bar(fill = NA, position = "identity")
 ```
 
-
 # Position adjustments
-position = "fill" works like stacking, but makes each set of stacked bars the same height.
+
+Position = "fill" works like stacking, but makes each set of stacked bars the same height.
+
 ```{r}
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, fill = clarity), position = "fill")
 ```
 
+# Position = "dodge"
 
-# position = "dodge" 
 Places overlapping objects directly beside one another.
+
 ```{r}
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, fill = clarity), position = "dodge")
 ```
 
 # Jittering
-position = "jitter" adds a small amount of random noise to each point to avoid overplotting when points overlap. This is useful for scatterplots but not barplots.
+
+Position = "jitter" adds a small amount of random noise to each point to avoid overplotting when points overlap. This is useful for scatterplots but not barplots.
+
 ```{r}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy), position = "jitter")
 
 ```
+
 # ASSIGNMENT: PLOT DECONSTRUCTION
 
 # 1) Original Plot
+
 This chart shows annual banana export volumes for major exporting countries (1994–2005). However, the overlapping 3D bars hide trends within and between countries and make it difficult to distinguish values in the back rows. The colors used are from a strong palette, which is not particularly colorblind friendly. Additionally, the banana picture in the background reduces clarity. These trends could be shown more clearly in a 2D format using a line chart. I digitised values where needed from the FAOSTAT’s country–year export totals data set.
 
 # Import data set
+
 ```{r}
 
 library(ggplot2)
@@ -435,6 +477,7 @@ bananas_top <- bananas %>% filter(Area %in% top_11)
 ```
 
 # Plot
+
 This line graph compares the annual banana export volumes in tonnes of the world's leading exporters. Ecuador consistently dominates the market, showing a steady increase from around 3 million tonnes in 1994 to over 4.5 million tonnes in 2005. Other major exporters include Costa Rica, the Philippines and Colombia, which export between 1 and 2 million tonnes of bananas per year, although with differing trends. Finally, smaller exporters such as Panama, Honduras, Belgium-Luxembourg, the United States, Cameroon and the United Arab Emirates contribute to a lesser extent (<1 million tonnes) to this market, with relatively stable or declining trends. Source: Food and Agriculture Organisation of the United Nations (FAOSTAT, Agricultural and livestock products).
 
 ```{r}
@@ -489,11 +532,14 @@ bananas_plot
 ggsave("bananas_plot.pdf") 
 ```
 
-# DATA WRANGLING IN R
+# 3. DATA WRANGLING IN R
+
 This workshop aims to teach you how to take tabular data and prepare it for subsequent use, such as plotting, fitting statistical models, or summarising it to better understand patterns in your data.
 
-# Table 1.0
+# Table 1
+
 Each row represents a country in a given year, with its specific values for the variables (cases and population) stored in separate columns.
+
 ```{r}
 library(tidyverse)
 table1
@@ -511,7 +557,9 @@ ggplot(table1, aes(year, cases)) +
 ```
 
 # Table 2
+
 Each row shows either cases or population for a country in a given year, with variable names stored as values.
+
 ```{r}
 table2
 
@@ -526,7 +574,9 @@ table2 %>%
 ```
 
 # Table 3
+
 Each row shows a country in a given year, but cases and population are combined into one string in a single column.
+
 ```{r}
 table3
 
@@ -541,19 +591,20 @@ table3 %>%
 ```
 
 # Pivoting data to make it tidy
+
 1) Understand what each variable and observation actually means.
 2) Resolve one of the two common problems with untidy data, which are: a. one variable is spread across multiple columns; b. one observation is scattered across multiple rows.
 
 To fix this, we pivot our data.
 
 # Lengthening datasets
+
 We do it by increasing the number of rows and decreasing the number of columns, solving those common problems of data values in the variable name.
+
 ```{r}
-# 1) Understand what each observation mean
 billboard
 ```
 ```{r}
-# 2) We need a format of the data set where each row is an observation
 billboard |> 
   pivot_longer(
     cols = starts_with("wk"), 
@@ -562,7 +613,9 @@ billboard |>
     values_drop_na = TRUE
   )
 ```
+
 # Widening datasets
+
 ```{r}
 cms_patient_experience
 
@@ -576,7 +629,9 @@ cms_patient_experience |>
     values_from = prf_rate
   )
 ```
+
 # Pivoting wider
+
 ```{r}
 df <- tribble(
   ~id, ~measurement, ~value,
@@ -593,9 +648,12 @@ df |>
     values_from = value
   )
 ```
-# Exercise 1 
+
+# Exercise 1
+
 Why are pivot_longer() and pivot_wider() not perfectly symmetrical?
 Because they solve different tyding problems, and in doing so they change the data set in diffent ways that can't always be undone. For instance, when we use pivot_wider() we turn data values into columns and in doing so we turn them into characters. Moreover, missing values are turned into NA and duplicates are aggregated. If we use pivot_wider() after, we can't always retrieve the original data set.
+
 ```{r}
 stocks <- tibble(
   year   = c(2015, 2015, 2016, 2016),
@@ -609,8 +667,11 @@ stocks %>%
   pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return")
 
 ```
+
 # Exercise 2
-Why does this code fail? Because 1999 and 2000 are columns in the data set, but they are read as column positions in pivot_longer
+
+Why does this code fail? Because 1999 and 2000 are columns in the data set, but they are read as column positions in pivot_longer.
+
 ```{r}
 table4a
 
@@ -620,12 +681,16 @@ table4a %>%
 table4a %>% 
   pivot_longer(c("1999", "2000"), names_to = "year", values_to = "cases")
 ```
+
 # Exercise 3
+
 Consider the sample tibble below. Do you need to make it wider or longer? What are the variables?
 LOnger because the categorical variable "sex" is spread in two columns ("female" and "male"), so we need to pivot to long in order to have each row as one observation (e.g yes pregnant x sex and count all in one row).
+
 - "pregnant": categorical variable
 - "sex": categorial variable
 - "count": numeric variable
+
 ```{r}
 preg <- tribble(
   ~pregnant, ~male, ~female,
@@ -640,10 +705,12 @@ preg %>%
 ```
 
 # Separating and uniting data tables
+
 The separate() function separates one column into multiple columns. 
 - Convert = TRUE is used to convert the values in the columns to better types.
 - Separate() will interpret the integers as positions to split at. Positive values start at 1 on the far-left of the strings; negative values start at -1 on the far-right of the strings.
 - To perform the inverse of separate() we use unite() to combine multiple columns into a single column.
+
 ```{r}
 table3
 
@@ -663,6 +730,7 @@ table5 %>%
 
 1) Explicit missing values indicate the present of absent data
 2) Implicit missing values indicate absent data (blank cell)
+
 ```{r}
 treatment <- tribble(
   ~person,           ~treatment, ~response,
@@ -677,12 +745,13 @@ treatment |>
 ```
 
 Sometimes missing values represent some fixed and known value, most commonly 0. You can use dplyr::coalesce() to replace them.
+
 ```{r}
 x <- c(1, 4, 5, 7, NA)
 coalesce(x, 0)
-
 ```
 3) NaN
+
 ```{r}
 x <- c(NA, NaN)
 x * 10
@@ -710,6 +779,7 @@ stocks |>
 ```
 
 # END-TO-END DATA ANALYSIS IN R
+
 Title: "Shark counts by location and category"
 
 The aim of this plot is import → tidy → analyse → visualise a data set of shark species counts across North Queensland (NQ) areas. I present two complementary graphics:
@@ -717,9 +787,10 @@ The aim of this plot is import → tidy → analyse → visualise a data set of 
 2) Lollipop plot to display the total counts across area
 
 # Import data-set
+
 I obtained the data set from the Queensland Government’s fisheries monitoring program (QFish).
+
 ```{r}
-instal(here)
 sharks <- readr::read_delim(
   here::here("code", "count_sharks_species.csv"),
   delim = ";",
@@ -729,10 +800,10 @@ head(sharks)
 ```
 
 # Tidy data-set
+
 I decided to display individually only the eight most abundant shark species, while all remaining species are grouped together as “Other”. I reshape the dataset from wide to long format (one row per Area × Species), convert counts to numeric, and remove the column called “Grand Total” from the QFish dataset. Finally, I computed the totals counts per location to order the areas by sample size..
 
 ```{r}
-
 top_species_n <- 8
 min_count     <- 0
 
@@ -784,7 +855,9 @@ long_species_clean <- long_species_clean %>%
 ```
 
 # Analysis
+
 I ranked the top ten areas using the total shark counts and identified which species were most abundant overall. I also calculated diversity metrics for each area, including richness, Shannon diversity, and the share for dominant species (proportion of the total counts in an area from that single species).
+
 ```{r}
 top_areas <- area_totals %>% slice_head(n = 10)
 
@@ -808,9 +881,7 @@ area_comp <- long_species_clean %>%
   ) %>%
   arrange(desc(AreaTotal))
 
-top_areas
-species_totals
-area_comp
+top_areas; species_totals;area_comp
 ```
 
 ```{r}
@@ -835,6 +906,7 @@ theme_ep <- function(base_size = 12){
 ```
 
 # Proportional Stacked Bar Chart
+
 This graph shows the species composition by area, where each bar represents a location and the colored segments within each bar indicates the relative share of each species in that area for comparisons of species composition across locations.
 
 ```{r}
@@ -854,7 +926,9 @@ ggsave("sharks_composition_by_area.pdf", p_comp, width = 10, height = 8)
 ```
 
 # Lollipop plot
+
 This graph show the total shark counts for each location, with numeric labels to make the values easy to read.
+
 ```{r}
 area_totals_ranked <- area_totals %>%
   arrange(desc(Total)) %>%
