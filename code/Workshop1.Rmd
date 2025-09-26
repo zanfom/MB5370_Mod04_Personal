@@ -496,53 +496,133 @@ The aim of this plot is showing the process of tidying the chosen dataset and pr
 
 # Import data-set
 ```{r}
-sharks <- readr::read_delim("../data/counts_sharks.csv")
+instal(here)
+sharks <- readr::read_delim(
+  here::here("code", "count_sharks_species.csv"),
+  delim = ";"
+)
+head(sharks)
 ```
-
 # Tidy data-set
 I excluded the "Grand total" column and reshaped the table into a long format, then organized the order of the categories in the plot and legend. Finally, I computed the per-area totals to order the areas by sample size (descending) for easier visual comparison.
 ```{r}
-long_format <- sharks |>
-  filter(Area != "Grand Total") |>
+long_species <- sharks |>
+  select(-`Grand Total`) |>
   pivot_longer(
-    cols = c(`< 2m`, `>= 2m`, `Non-shark`),
-    names_to = "LengthCategory",
-    values_to = "Count") |>
-  mutate(LengthCategory = factor(LengthCategory, levels = c("< 2m", ">= 2m", "Non-shark"))) |>
+    cols = `Aust Sharpnose Shark`:`Zebra Shark`,
+    names_to = "Species",
+    values_to = "Count",
+    values_drop_na = TRUE
+  ) |>
+  mutate(
+    Count = as.numeric(Count),
+    Area  = as.character(Area)) |>
   group_by(Area) |>
   mutate(AreaTotal = sum(Count, na.rm = TRUE)) |>
   ungroup() |>
-  mutate(Area = fct_reorder(Area, AreaTotal, .desc = TRUE))
+  mutate(Area = forcats::fct_reorder(Area, AreaTotal, .desc = TRUE))
+
+long_species
+
+```
+# Plot
+Shark counts by area and species. Horizontal grouped bars show raw counts of < 2 m, ≥ 2 m, and non-shark observations for each area. Colors use a color-blind–safe palette.
+
+```{r}
+library(sf); library(dplyr)
+
+
+url <- "https://github.com/jcianci12/Queensland-GeoJSON/raw/refs/heads/main/Australia/Queensland/Queensland%20Local%20Government%20Areas.json"
+
+qld_lga <- st_read(url)
+
+names(qld_lga)
+str(qld_lga)
+
+cand <- c("qld_lga__1","qld_lga__2","qld_lga__3","qld_lga__4","qld_lga__5")
+
+qld_lga %>%
+  st_drop_geometry() %>%
+  summarise(across(all_of(cand), ~dplyr::n_distinct(.x))) 
+
+qld_lga %>%
+  st_drop_geometry() %>%
+  select(all_of(cand)) %>%
+  slice_head(n = 10)
+
+qld_lga <- qld_lga %>%
+  mutate(across(all_of(cand), ~as.character(.x))) %>%
+  mutate(
+    Area = coalesce(!!!rlang::syms(cand)),   # first non-NA among the candidates
+    Area = str_squish(Area)
+  )
+
+qld_lga <- qld_lga %>%
+  group_by(Area) %>%
+  summarise(.groups = "drop")
+
+qld_lga <- st_transform(qld_lga, 4326)
+
+p_outline <- ggplot(qld_lga) +
+  geom_sf(color = "white", linewidth = 0.2, fill = "grey85") +
+  theme_void() +
+  labs(title = "Queensland LGAs")
+
+p_outline
+
 ```
 
-# Plot
-Shark length counts by area and category. Horizontal grouped bars show raw counts of < 2 m, ≥ 2 m, and non-shark observations for each area. Colors use a color-blind–safe palette.
 ```{r}
-theme_clean <- function(base_size = 12){
-  theme_classic(base_size = base_size) +
-    theme(
-      panel.grid.major.y = element_blank(),
-      panel.grid.minor   = element_blank(),
-      axis.ticks         = element_blank(),
-      axis.text.y        = element_text(face = "bold"),
-      plot.title         = element_text(face = "bold"),
-      legend.position    = "right",
-      legend.title       = element_text(face = "bold"),
-      legend.box         = "vertical",
-      plot.caption       = element_text(color = "grey40", size = 9))}
-pos <- position_dodge2(width = 0.8, padding = 0.15, preserve = "single")
 
-sharks_plot <- ggplot(long_format, aes(x = Area, y = Count, fill = LengthCategory)) +
-  geom_col(position = pos, width = 0.72) +
+
+install.packages("sf") 
+install.packages("terra")
+install.packages("tmap")
+
+library(tidyverse)
+library(sf) # simple features
+library (terra) # for raster
+library(tmap)
+
+
+topN <- 6
+keep_species <- long_species %>%
+  group_by(Species) %>% summarise(Total = sum(Count, na.rm = TRUE), .groups="drop") %>%
+  slice_max(Total, n = topN) %>% pull(Species)
+
+long_small <- long_species %>%
+  filter(Species %in% keep_species) %>%
+  group_by(Area) %>% mutate(AreaTotal = sum(Count, na.rm = TRUE)) %>%
+  ungroup() %>% mutate(Area = reorder(Area, AreaTotal))
+
+p_dodge <- ggplot(long_small, aes(Area, Count, fill = Species)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.72) +
   coord_flip() +
   scale_y_continuous(labels = comma, expand = expansion(mult = c(0.02, 0.04))) +
-  scale_fill_viridis_d(
-    option = "C", begin = 0.15, end = 0.9,
-    labels = c("< 2 m", "≥ 2 m", "Non-shark")) +
-  labs(title = "Shark length counts by area and category", x = NULL, y = "Count", fill = "Category", caption = "Data: Department of Agriculture and Fisheries (QFish)") +
-  theme_clean()
+  scale_fill_viridis_d(option = "C", begin = 0.15, end = 0.9, name = "Species") +
+  labs(title = sprintf("Shark counts by area (top %d species)", topN),
+       x = NULL, y = "Count",
+       caption = "Data: Department of Agriculture and Fisheries (QFish)") +
+  theme_clean2()
+p_dodge
 
-sharks_plot
+library(forcats)
+
+totals <- long_species %>%
+  group_by(Area) %>% summarise(Total = sum(Count, na.rm = TRUE), .groups="drop") %>%
+  mutate(Area = fct_reorder(Area, Total))
+
+p_lolli <- ggplot(totals, aes(Total, Area)) +
+  geom_segment(aes(x = 0, xend = Total, y = Area, yend = Area), linewidth = 0.8, alpha = 0.6) +
+  geom_point(size = 2.8) +
+  scale_x_continuous(labels = comma) +
+  labs(title = "Total shark counts by area",
+       x = "Total count", y = NULL,
+       caption = "Data: Department of Agriculture and Fisheries (QFish)") +
+  theme_clean2()
+p_lolli
+ggsave("sharks_totals_lollipop.pdf", p_lolli, width = 9, height = 7)
+
 ggsave("sharks_plot.pdf")
 
 ```
@@ -595,11 +675,11 @@ table3 %>%
   )
 
 ```
-# Lengthening datasets
 
 ```{r}
-billboard
-
+library(knitr)
+library(markdown)
+setwd ("C:\\Murray_Git\\MB5370\\Module_01") #make sure your knitr file is in
 ```
 
 
