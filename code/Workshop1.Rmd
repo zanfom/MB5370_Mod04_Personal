@@ -492,142 +492,177 @@ ggsave("bananas_plot.pdf")
 # END-TO-END DATA ANALYSIS IN R
 Title: "Shark counts by location and category"
 
-The aim of this plot is showing the process of tidying the chosen dataset and producing a grouped bar chart in order to compare the counts of sharks differing in length (< 2 m, ≥ 2 m) and non-shark counts across different area in NQ.
+The aim of this plot is import → tidy → analyse → visualise a data set of shark species counts across North Queensland (NQ) areas. I present two complementary graphics:
+1) Composition plot showing the share of species within each area and ordered by total counts
+2) Lollipop plot to display the total counts across area
 
 # Import data-set
+I obtained the data set from the Queensland Government’s fisheries monitoring program (QFish).
 ```{r}
 instal(here)
 sharks <- readr::read_delim(
   here::here("code", "count_sharks_species.csv"),
-  delim = ";"
+  delim = ";",
+  show_col_types = FALSE
 )
 head(sharks)
 ```
 # Tidy data-set
-I excluded the "Grand total" column and reshaped the table into a long format, then organized the order of the categories in the plot and legend. Finally, I computed the per-area totals to order the areas by sample size (descending) for easier visual comparison.
+I decided to display individually only the eight most abundant shark species, while all remaining species are grouped together as “Other”. I reshape the dataset from wide to long format (one row per Area × Species), convert counts to numeric, and remove the column called “Grand Total” from the QFish dataset. Finally, I computed the totals counts per location to order the areas by sample size..
+
 ```{r}
-long_species <- sharks |>
-  select(-`Grand Total`) |>
+
+top_species_n <- 8
+min_count     <- 0
+
+long_species_clean <- sharks %>%
+  select(-any_of("Grand Total")) %>%                    
   pivot_longer(
     cols = `Aust Sharpnose Shark`:`Zebra Shark`,
-    names_to = "Species",
+    names_to  = "Species",
     values_to = "Count",
     values_drop_na = TRUE
-  ) |>
+  ) %>%
   mutate(
-    Count = as.numeric(Count),
-    Area  = as.character(Area)) |>
-  group_by(Area) |>
-  mutate(AreaTotal = sum(Count, na.rm = TRUE)) |>
-  ungroup() |>
-  mutate(Area = forcats::fct_reorder(Area, AreaTotal, .desc = TRUE))
-
-long_species
-
-```
-# Plot
-Shark counts by area and species. Horizontal grouped bars show raw counts of < 2 m, ≥ 2 m, and non-shark observations for each area. Colors use a color-blind–safe palette.
-
-```{r}
-library(sf); library(dplyr)
-
-
-url <- "https://github.com/jcianci12/Queensland-GeoJSON/raw/refs/heads/main/Australia/Queensland/Queensland%20Local%20Government%20Areas.json"
-
-qld_lga <- st_read(url)
-
-names(qld_lga)
-str(qld_lga)
-
-cand <- c("qld_lga__1","qld_lga__2","qld_lga__3","qld_lga__4","qld_lga__5")
-
-qld_lga %>%
-  st_drop_geometry() %>%
-  summarise(across(all_of(cand), ~dplyr::n_distinct(.x))) 
-
-qld_lga %>%
-  st_drop_geometry() %>%
-  select(all_of(cand)) %>%
-  slice_head(n = 10)
-
-qld_lga <- qld_lga %>%
-  mutate(across(all_of(cand), ~as.character(.x))) %>%
-  mutate(
-    Area = coalesce(!!!rlang::syms(cand)),   # first non-NA among the candidates
-    Area = str_squish(Area)
+    Area    = str_trim(as.character(Area)),
+    Species = str_trim(as.character(Species)),
+    Count   = suppressWarnings(as.numeric(Count))
+  ) %>%
+  filter(
+    !is.na(Area), Area    != "", !str_detect(str_to_lower(Area),    "^grand\\s*total$"),
+    !is.na(Species), Species != "", !str_detect(str_to_lower(Species), "^grand\\s*total$")
   )
 
-qld_lga <- qld_lga %>%
+if (top_species_n > 0) {
+  keep_species <- long_species_clean %>%
+    group_by(Species) %>%
+    summarise(Total = sum(Count, na.rm = TRUE), .groups = "drop") %>%
+    slice_max(Total, n = top_species_n) %>%
+    pull(Species) %>%
+    as.character()
+
+  long_species_clean <- long_species_clean %>%
+    mutate(Species = if_else(Species %in% keep_species, Species, "Other"))
+}
+
+if (min_count > 0) {
+  long_species_clean <- long_species_clean %>%
+    mutate(Species = if_else(Count < min_count, "Other", Species))
+}
+
+long_species_clean <- long_species_clean %>%
+  mutate(Species = fct_relevel(Species, "Other", after = Inf))
+
+area_totals <- long_species_clean %>%
   group_by(Area) %>%
-  summarise(.groups = "drop")
+  summarise(Total = sum(Count, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(Total))
 
-qld_lga <- st_transform(qld_lga, 4326)
+long_species_clean <- long_species_clean %>%
+  mutate(Area = fct_relevel(Area, !!!area_totals$Area))
+```
 
-p_outline <- ggplot(qld_lga) +
-  geom_sf(color = "white", linewidth = 0.2, fill = "grey85") +
-  theme_void() +
-  labs(title = "Queensland LGAs")
+# Analysis
+I ranked the top ten areas using the total shark counts and identified which species were most abundant overall. I also calculated diversity metrics for each area, including richness, Shannon diversity, and the share for dominant species (proportion of the total counts in an area from that single species).
+```{r}
+top_areas <- area_totals %>% slice_head(n = 10)
 
-p_outline
+species_totals <- long_species_clean %>%
+  group_by(Species) %>%
+  summarise(Total = sum(Count, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(Total))
 
+area_comp <- long_species_clean %>%
+  group_by(Area, Species) %>%
+  summarise(Count = sum(Count, na.rm = TRUE), .groups = "drop") %>%
+  group_by(Area) %>%
+  mutate(p = Count / sum(Count, na.rm = TRUE)) %>%
+  summarise(
+    AreaTotal = sum(Count, na.rm = TRUE),
+    Richness  = n_distinct(Species[p > 0]),
+    Shannon   = -sum(ifelse(p > 0, p * log(p), 0)),
+    TopSpecies = Species[which.max(Count)],
+    TopShare   = max(p),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(AreaTotal))
+
+top_areas
+species_totals
+area_comp
 ```
 
 ```{r}
+theme_ep <- function(base_size = 12){
+  theme_classic(base_size) +
+    theme(
+      axis.ticks         = element_blank(),
+      panel.grid.minor   = element_blank(),
+      panel.grid.major.x = element_line(color = "grey92",
+      linewidth = 0.4),
+      axis.text.y        = element_text(face = "bold"),
+      plot.title         = element_text(face = "bold",
+      margin = margin(b = 6)),
+      plot.subtitle      = element_text(color = "grey30"),
+      plot.caption       = element_text(color = "grey45",
+      size = 9),
+      legend.title       = element_text(face = "bold"),
+      legend.box         = "vertical",
+      legend.key.height  = grid::unit(10, "pt")
+    )
+}
 
+```
 
-install.packages("sf") 
-install.packages("terra")
-install.packages("tmap")
+# Proportional Stacked Bar Chart
+This graph shows the species composition by area, where each bar represents a location and the colored segments within each bar indicates the relative share of each species in that area for comparisons of species composition across locations.
 
-library(tidyverse)
-library(sf) # simple features
-library (terra) # for raster
-library(tmap)
+```{r}
+p_comp <- ggplot(long_species_clean, aes(x = Area, y = Count, fill = Species)) +
+  geom_col(position = "fill", width = 0.72) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(labels = percent_format(accuracy = 1), expand = expansion(mult = c(0.01, 0.03))) +
+  scale_fill_viridis_d(option = "D", begin = 0.15, end = 0.92, name = "Species") +
+  labs(
+    title    = "Shark Species Composition by Area",
+    x = NULL, y = "Share",
+    caption  = "Data: Department of Agriculture and Fisheries (QFish)") +
+  theme_ep()
 
+p_comp
+ggsave("sharks_composition_by_area.pdf", p_comp, width = 10, height = 8)
+```
 
-topN <- 6
-keep_species <- long_species %>%
-  group_by(Species) %>% summarise(Total = sum(Count, na.rm = TRUE), .groups="drop") %>%
-  slice_max(Total, n = topN) %>% pull(Species)
+# Lollipop plot
+This graph show the total shark counts for each location, with numeric labels to make the values easy to read.
+```{r}
+area_totals_ranked <- area_totals %>%
+  arrange(desc(Total)) %>%
+  mutate(Area_f = forcats::fct_reorder(Area, Total))
 
-long_small <- long_species %>%
-  filter(Species %in% keep_species) %>%
-  group_by(Area) %>% mutate(AreaTotal = sum(Count, na.rm = TRUE)) %>%
-  ungroup() %>% mutate(Area = reorder(Area, AreaTotal))
+p_total <- ggplot(area_totals_ranked, aes(x = Total, y = Area_f)) +
+  geom_segment(aes(x = 0, xend = Total, y = Area_f, yend = Area_f),
+               linewidth = 1, alpha = 0.55, color = "grey65") +
+  geom_point(aes(color = Total), size = 3.5) +
+  geom_text(aes(label = scales::comma(Total)),
+            nudge_x = 0.02 * max(area_totals_ranked$Total, na.rm = TRUE),
+            size = 3.2, hjust = 0) +
+  scale_color_viridis_c(option = "D", end = 0.9, guide = "none") +
+  scale_x_continuous(labels = scales::comma, expand = expansion(mult = c(0.01, 0.18))) +
+  labs(
+    title    = "Total Shark Counts by Area",
+    x = "Total Count", y = NULL,
+    caption  = "Data: Department of Agriculture and Fisheries (QFish)") +
+  coord_cartesian(clip = "off") +
+  theme_ep()
 
-p_dodge <- ggplot(long_small, aes(Area, Count, fill = Species)) +
-  geom_col(position = position_dodge(width = 0.8), width = 0.72) +
-  coord_flip() +
-  scale_y_continuous(labels = comma, expand = expansion(mult = c(0.02, 0.04))) +
-  scale_fill_viridis_d(option = "C", begin = 0.15, end = 0.9, name = "Species") +
-  labs(title = sprintf("Shark counts by area (top %d species)", topN),
-       x = NULL, y = "Count",
-       caption = "Data: Department of Agriculture and Fisheries (QFish)") +
-  theme_clean2()
-p_dodge
-
-library(forcats)
-
-totals <- long_species %>%
-  group_by(Area) %>% summarise(Total = sum(Count, na.rm = TRUE), .groups="drop") %>%
-  mutate(Area = fct_reorder(Area, Total))
-
-p_lolli <- ggplot(totals, aes(Total, Area)) +
-  geom_segment(aes(x = 0, xend = Total, y = Area, yend = Area), linewidth = 0.8, alpha = 0.6) +
-  geom_point(size = 2.8) +
-  scale_x_continuous(labels = comma) +
-  labs(title = "Total shark counts by area",
-       x = "Total count", y = NULL,
-       caption = "Data: Department of Agriculture and Fisheries (QFish)") +
-  theme_clean2()
-p_lolli
-ggsave("sharks_totals_lollipop.pdf", p_lolli, width = 9, height = 7)
-
-ggsave("sharks_plot.pdf")
+p_total
+ggsave("sharks_totals_lollipop.pdf", p_total, width = 10, height = 8)
 
 ```
 
 # DATA WRANGLING IN R
+This workshop aims to teach you how to take tabular data and prepare it for subsequent use, such as plotting, fitting statistical models, or summarising it to better understand patterns in your data.
 
 # Table 1.0
 Each row represents a country in a given year, with its specific values for the variables (cases and population) stored in separate columns.
@@ -661,6 +696,7 @@ table2 %>%
   )
 
 ```
+
 # Table 3
 Each row shows a country in a given year, but cases and population are combined into one string in a single column.
 ```{r}
@@ -676,11 +712,72 @@ table3 %>%
 
 ```
 
+# Pivoting data to make it tidy
+1) Understand what each variable and observation actually means.
+2) Resolve one of the two common problems with untidy data, which are: a. one variable is spread across multiple columns; b. one observation is scattered across multiple rows.
+
+To fix this, we pivot our data.
+
+# Lengthening datasets
+We do it by increasing the number of rows and decreasing the number of columns, solving those common problems of data values in the variable name.
 ```{r}
-library(knitr)
-library(markdown)
-setwd ("C:\\Murray_Git\\MB5370\\Module_01") #make sure your knitr file is in
+# 1) Understand what each observation mean
+billboard
 ```
+```{r}
+# 2) We need a format of the data set where each row is an observation
+billboard |> 
+  pivot_longer(
+    cols = starts_with("wk"), 
+    names_to = "week", 
+    values_to = "rank",
+    values_drop_na = TRUE
+  )
+```
+# Widening datasets
+```{r}
+cms_patient_experience
+
+cms_patient_experience |> 
+  distinct(measure_cd, measure_title)
+
+cms_patient_experience |> 
+  pivot_wider(
+    id_cols = starts_with("org"),
+    names_from = measure_cd,
+    values_from = prf_rate
+  )
+```
+# Pivoting wider
+```{r}
+df <- tribble(
+  ~id, ~measurement, ~value,
+  "A",        "bp1",    100,
+  "B",        "bp1",    140,
+  "B",        "bp2",    115, 
+  "A",        "bp2",    120,
+  "A",        "bp3",    105
+)
+
+df |> 
+  pivot_wider(
+    names_from = measurement,
+    values_from = value
+  )
+```
+# Exercises
+1) Why are pivot_longer() and pivot_wider() not perfectly symmetrical? Carefully consider the following example. 
+```{r}
+stocks <- tibble(
+  year   = c(2015, 2015, 2016, 2016),
+  half  = c(   1,    2,     1,    2),
+  return = c(1.88, 0.59, 0.92, 0.17)
+)
+stocks
+
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return) %>% 
+  pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return")
 
 
-
+```
